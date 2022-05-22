@@ -1,0 +1,28 @@
+.page-container {
+	height: 100%;
+}
+
+.page-container_top-bar {
+	height: 64px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	color: #FFFFFF;
+	background-color: #25262b;
+	font-size: 16px;
+}
+
+.page-container_logo {
+	padding: 20px 32px;
+	border-right: solid 1px rgba(255, 255, 255, 0.3);
+
+}
+
+.page-container_page-title {
+	margin-left: 32px;
+}
+
+.page-container_content-container {
+	padding: 32px;
+	height: calc(100% - 127px);
+}

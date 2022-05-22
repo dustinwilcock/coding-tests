@@ -1,0 +1,27 @@
+.breadcrumbs {
+	display: flex;
+	flex-direction: row;
+	margin-bottom: 32px;
+}
+
+.breadcrumbs_crumb {
+	display: flex;
+	flex-direction: row;
+	margin-right: 8px;
+}
+
+.breadcrumbs_crumb > a {
+	margin-right: 8px;
+	text-decoration: none;
+	color: #32AEDA;
+	font-size: 14px;
+	opacity: 0.8;
+}
+
+.breadcrumbs_crumb > a:hover {
+	opacity: 1;
+}
+
+.breadcrumbs_crumb:last-child > a {
+	font-weight: 600;
+}
