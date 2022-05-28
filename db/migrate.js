@@ -26,7 +26,24 @@ db.serialize(() => {
 			title TEXT,
 			country TEXT
 		);
-	`);
+	`)
+	.run(`
+		create table employee_field_defs (
+			id INTEGER PRIMARY KEY,
+			company_id INTEGER,
+			name TEXT,
+			UNIQUE (company_id, name)
+		);
+	`)
+	.run(`
+		create table employee_fields (
+			id INTEGER PRIMARY KEY,
+			field_def_id INTEGER,
+			employee_id INTEGER,
+			value TEXT,
+			UNIQUE (field_def_id, employee_id)
+		);`
+	)
 });
 
 db.close((err) => {

@@ -58,17 +58,18 @@ app.get('/companies/:companyId', (req, res) => {
  */
  app.patch('/companies/:companyId', (req, res) => {
 	const updateCompany = req.body;
-	if (updateCompany.name == undefined)
+	if (updateCompany.name == undefined) {
 		res.status(400).json({ 
-			error: "name is undefined"
+			error: "Company name is undefined."
 		});
+	}
 
 	const sql = `
 		UPDATE companies SET name = @name WHERE id = @companyId;
 	`;
 	const params = [ updateCompany.name, req.params.companyId ];
 
-	db.run(sql, params, (err,row) => {
+	db.run(sql, params, (err) => {
 		if (err) {
 			res.status(400).json({
 				error: err.message
@@ -76,6 +77,57 @@ app.get('/companies/:companyId', (req, res) => {
 			return;
 		}
 		res.status(204).json({
+			message: 'success'
+		})
+	});
+})
+
+/**
+ * GET /companies/:companyId/customFields
+ */
+app.get('/companies/:companyId/customFields', (req, res) => {
+	const sql = `
+		SELECT id, name FROM employee_field_defs WHERE company_id = @companyId
+	`;
+	const params = req.params.companyId;
+
+	db.all(sql, params, (err, rows) => {
+		if (err) {
+			res.status(400).json({
+				error: err.message
+			});
+			return;
+		}
+		res.json({
+			message: 'success',
+			data: rows
+		})
+	});
+})
+
+/**
+ * POST /companies/:companyId/customFields
+ */
+app.post('/companies/:companyId/customFields', (req, res) => {
+	const newField = req.body;
+	if (newField.name == undefined) {
+		res.status(400).json({
+			error: "Custom field name is undefined."
+		})
+	}
+	const sql = `
+		INSERT INTO employee_field_defs(company_id, name) VALUES (@companyId, @name);
+	`;
+	const params = [ req.params.companyId, newField.name ];
+
+	db.run(sql, params, (err) => {
+		if (err) {
+			res.status(400).json({
+				error: err.message
+			});
+			return;
+		}
+		res.status(201).json({
 			message: 'success'
 		})
 	});
@@ -110,6 +162,33 @@ app.get('/companies/:companyId/departments', (req, res) => {
  app.get('/departments/:departmentId/employees', (req, res) => {
 	const sql = `
 		SELECT e.id, e.name, e.avatar, e.title, e.country FROM employees e WHERE department_id = @departmentId;
+	`;
+	const params = req.params.departmentId;
+
+	db.all(sql, params, (err,rows) => {
+		if (err) {
+			res.status(400).json({
+				error: err.message
+			});
+			return;
+		}
+		res.json({
+			message: 'success',
+			data: rows
+		})
+	});
+})
+
+/**
+ * GET /departments/:departmentId/employees/customFields
+ */
+ app.get('/departments/:departmentId/employees/customFields', (req, res) => {
+	const sql = `
+		SELECT e.id, efd.name, ef.value 
+			FROM employees e 
+				JOIN departments d ON e.department_id = d.id 
+				JOIN employee_field_defs efd ON efd.company_id = d.company_id 
+				JOIN employee_fields ef ON efd.id = ef.field_def_id AND e.id = ef.employee_id WHERE department_id = @departmentId;
 	`;
 	const params = req.params.departmentId;
 
