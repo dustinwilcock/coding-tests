@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from "react-router-dom";
 import './Companies.css';
 
 const TableRow = ({
@@ -19,6 +20,11 @@ const TableRow = ({
 
 const Companies = () => {
 	const [companies, setCompanies] = useState([]);
+	const navigate = useNavigate();
+
+  	function handleClick(companyId) {
+    	navigate("/companies/" + companyId, { replace: true });
+  	}
 
 	// fetch the company data from the backend
 	useEffect(() => {
@@ -45,7 +51,7 @@ const Companies = () => {
 				<TableRow
 					key={company.id}
 					className="companies_row"
-					onClick={() => console.log(`navigate to company page for ${company.name}`)}
+					onClick={() => handleClick(company.id)}
 					{...company}
 				/>
 			))}

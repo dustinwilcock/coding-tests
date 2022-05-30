@@ -87,7 +87,7 @@ app.get('/companies/:companyId', (req, res) => {
  */
 app.get('/companies/:companyId/customFields', (req, res) => {
 	const sql = `
-		SELECT id, name FROM employee_field_defs WHERE company_id = @companyId
+		SELECT * FROM employee_field_defs WHERE company_id = @companyId
 	`;
 	const params = req.params.companyId;
 
@@ -116,7 +116,8 @@ app.post('/companies/:companyId/customFields', (req, res) => {
 		})
 	}
 	const sql = `
-		INSERT INTO employee_field_defs(company_id, name) VALUES (@companyId, @name);
+		INSERT INTO employee_field_defs(company_id, name) 
+			VALUES (@companyId, @name);
 	`;
 	const params = [ req.params.companyId, newField.name ];
 
@@ -138,7 +139,7 @@ app.post('/companies/:companyId/customFields', (req, res) => {
  */
 app.get('/companies/:companyId/departments', (req, res) => {
 	const sql = `
-		SELECT d.id, d.Name FROM departments d WHERE company_id = @companyId;
+		SELECT * FROM departments WHERE company_id = @companyId;
 	`;
 	const params = req.params.companyId;
 
@@ -157,13 +158,17 @@ app.get('/companies/:companyId/departments', (req, res) => {
 })
 
 /**
- * GET /departments/:departmentId/employees
+ * GET /companies/:companyId/employees
  */
- app.get('/departments/:departmentId/employees', (req, res) => {
+ app.get('/companies/:companyId/employees', (req, res) => {
 	const sql = `
-		SELECT e.id, e.name, e.avatar, e.title, e.country FROM employees e WHERE department_id = @departmentId;
+		SELECT e.*, d.company_id
+			FROM employees e 
+				JOIN departments d ON e.department_id = d.id
+			WHERE d.company_id = @companyId
+			ORDER BY e.department_id;
 	`;
-	const params = req.params.departmentId;
+	const params = req.params.companyId;
 
 	db.all(sql, params, (err,rows) => {
 		if (err) {
@@ -180,17 +185,18 @@ app.get('/companies/:companyId/departments', (req, res) => {
 })
 
 /**
- * GET /departments/:departmentId/employees/customFields
+ * GET /companies/:companyId/employees/customFields
  */
- app.get('/departments/:departmentId/employees/customFields', (req, res) => {
+ app.get('/companies/:companyId/employees/customFieldValues', (req, res) => {
 	const sql = `
-		SELECT e.id, efd.name, ef.value 
+		SELECT e.id, efd.*, ef.value 
 			FROM employees e 
 				JOIN departments d ON e.department_id = d.id 
 				JOIN employee_field_defs efd ON efd.company_id = d.company_id 
-				JOIN employee_fields ef ON efd.id = ef.field_def_id AND e.id = ef.employee_id WHERE department_id = @departmentId;
+				JOIN employee_fields ef ON efd.id = ef.field_def_id AND e.id = ef.employee_id 
+			WHERE d.company_id = @companyId;
 	`;
-	const params = req.params.departmentId;
+	const params = req.params.companyId;
 
 	db.all(sql, params, (err,rows) => {
 		if (err) {

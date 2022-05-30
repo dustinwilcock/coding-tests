@@ -16,6 +16,12 @@ const Breadcrumbs = () => {
 			});
 			break;
 		default:
+			if (location.pathname.startsWith('/companies/')) {
+				crumbs.push({
+					name: 'Companies',
+					destination: '/companies',
+				});
+			}
 			break;
 	}
 
