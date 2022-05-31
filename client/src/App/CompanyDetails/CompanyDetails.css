@@ -36,6 +36,7 @@
 .company_details_subheader {
 	display: flex;
 	flex-direction: row;
+	column-span: all;
 	padding: 8px 16px;
 	font-size: 14px;
 	background-color: #898d9e;

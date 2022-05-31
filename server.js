@@ -87,7 +87,10 @@ app.get('/companies/:companyId', (req, res) => {
  */
 app.get('/companies/:companyId/customFields', (req, res) => {
 	const sql = `
-		SELECT * FROM employee_field_defs WHERE company_id = @companyId
+		SELECT * 
+			FROM employee_field_defs 
+			WHERE company_id = @companyId
+			ORDER BY id
 	`;
 	const params = req.params.companyId;
 
@@ -185,16 +188,73 @@ app.get('/companies/:companyId/departments', (req, res) => {
 })
 
 /**
+ * PATCH /employees/:employeeId
+ */
+app.patch('/employees/:employeeId', (req, res) => {
+	const updateEmployee = req.body;
+	const sql = `
+		UPDATE employees 
+			SET name = @name,
+				title = @title,
+				country = @country
+			WHERE id = @employeeId;
+	`;
+	const params = [ updateEmployee.name, updateEmployee.title, updateEmployee.country, req.params.companyId ];
+
+	db.run(sql, params, (err) => {
+		if (err) {
+			res.status(400).json({
+				error: err.message
+			});
+			return;
+		}
+		res.status(204).json({
+			message: 'success'
+		})
+	});
+})
+
+/**
+ * PATCH /employees/:employeeId/customFieldValues
+ */
+ app.patch('/employees/:employeeId/customFieldValues', (req, res) => {
+	const updateEmployee = req.body;
+	const sql = `
+		INSERT OR IGNORE INTO employee_fields 
+			( field_def_id, employee_id, value )
+		VALUES
+			( @id, @employeeId, @value );
+		UPDATE employee_fields
+			SET value = @value
+			WHERE field_def_id = @id AND employee_id = @employee_id;
+	`;
+	const params = [ updateEmployee.id, req.params.employeeId, updateEmployee.value ];
+
+	db.run(sql, params, (err) => {
+		if (err) {
+			res.status(400).json({
+				error: err.message
+			});
+			return;
+		}
+		res.status(204).json({
+			message: 'success'
+		})
+	});
+})
+
+/**
  * GET /companies/:companyId/employees/customFields
  */
  app.get('/companies/:companyId/employees/customFieldValues', (req, res) => {
 	const sql = `
-		SELECT e.id, efd.*, ef.value 
+		SELECT e.id as employee_id, efd.id as field_def_id, ef.value 
 			FROM employees e 
 				JOIN departments d ON e.department_id = d.id 
 				JOIN employee_field_defs efd ON efd.company_id = d.company_id 
 				JOIN employee_fields ef ON efd.id = ef.field_def_id AND e.id = ef.employee_id 
-			WHERE d.company_id = @companyId;
+			WHERE d.company_id = @companyId
+			ORDER BY e.id, efd.id;
 	`;
 	const params = req.params.companyId;
 
